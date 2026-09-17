@@ -4,6 +4,11 @@ import { unstable_cache, revalidateTag } from "next/cache";
 import { authOptions } from "../../../lib/authOptions";
 import { prisma } from "../../../lib/prisma";
 
+// This handler reads the live database. Without this directive Next attempts
+// to prerender the public GET endpoint during `next build`, before Railway's
+// runtime database connection is available.
+export const dynamic = "force-dynamic";
+
 // Single-event site: GET returns the one event with its ticket types and
 // gallery. Public, no auth needed - this is what the homepage reads, and
 // under real traffic every visitor hits it, so it's cached for a short
