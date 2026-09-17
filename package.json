@@ -1,0 +1,31 @@
+{
+  "name": "eventhub",
+  "version": "1.0.0",
+  "private": true,
+  "scripts": {
+    "dev": "next dev",
+    "build": "prisma generate && next build",
+    "start": "next start",
+    "postinstall": "prisma generate",
+    "db:push": "prisma db push",
+    "db:seed": "node prisma/seed.js"
+  },
+  "dependencies": {
+    "@prisma/client": "^5.20.0",
+    "bcryptjs": "^2.4.3",
+    "cloudinary": "^2.11.0",
+    "firebase": "^11.0.2",
+    "firebase-admin": "^13.0.1",
+    "html5-qrcode": "^2.3.8",
+    "next": "^14.2.35",
+    "next-auth": "^4.24.7",
+    "qrcode": "^1.5.4",
+    "razorpay": "^2.9.4",
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1",
+    "uuid": "^9.0.1"
+  },
+  "devDependencies": {
+    "prisma": "^5.20.0"
+  }
+}
