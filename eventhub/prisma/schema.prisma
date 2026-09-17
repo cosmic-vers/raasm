@@ -1,0 +1,160 @@
+// Single Postgres database holding everything: admin users, event info,
+// gallery/menu/stall data, ticket types, orders, tickets, and referral codes.
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")   // pooled connection string (use for the running app)
+  directUrl = env("DIRECT_URL")     // direct connection string (used only for `prisma db push`/migrations)
+}
+
+// --- Admin (staff login for the dashboard) ---
+model Admin {
+  id        String   @id @default(cuid())
+  email     String   @unique
+  password  String   // bcrypt hash
+  name      String?
+  createdAt DateTime @default(now())
+}
+
+// --- Buyer account, identified by phone number (Firebase Phone Auth) ---
+model User {
+  id         String   @id @default(cuid())
+  phone      String   @unique // E.164 format, e.g. +919876543210
+  firebaseUid String  @unique
+  name       String?
+  createdAt  DateTime @default(now())
+
+  orders     Order[]
+}
+
+// --- The event itself (single-event site, so usually just one row) ---
+model Event {
+  id          String   @id @default(cuid())
+  title       String
+  tagline     String?
+  description String
+  venue       String
+  address     String?
+  latitude    Float?
+  longitude   Float?
+  mapUrl      String?  // full Google Maps link, used for the "Get Directions" button
+  startsAt    DateTime
+  endsAt      DateTime
+  coverImage  String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  ticketTypes   TicketType[]
+  galleryImages GalleryImage[]
+  menuItems     MenuItem[]
+  stalls        Stall[]
+}
+
+model MenuItem {
+  id          String   @id @default(cuid())
+  eventId     String
+  event       Event    @relation(fields: [eventId], references: [id], onDelete: Cascade)
+  name        String
+  description String?
+  price       Int?     // in paise; leave empty for free/included items
+  category    String?  // e.g. "Starters", "Mains", "Drinks", "Desserts"
+  image       String?
+  available   Boolean  @default(true)
+  createdAt   DateTime @default(now())
+}
+
+model Stall {
+  id          String   @id @default(cuid())
+  eventId     String
+  event       Event    @relation(fields: [eventId], references: [id], onDelete: Cascade)
+  name        String
+  description String?
+  category    String?  // e.g. "Food", "Merch", "Games", "Art"
+  boothNumber String?
+  image       String?
+  createdAt   DateTime @default(now())
+}
+
+model GalleryImage {
+  id        String   @id @default(cuid())
+  eventId   String
+  event     Event    @relation(fields: [eventId], references: [id], onDelete: Cascade)
+  url       String
+  caption   String?
+  createdAt DateTime @default(now())
+}
+
+// --- Ticket types, e.g. "General", "VIP" ---
+model TicketType {
+  id          String   @id @default(cuid())
+  eventId     String
+  event       Event    @relation(fields: [eventId], references: [id], onDelete: Cascade)
+  name        String
+  description String?
+  price       Int      // in paise (INR smallest unit) to avoid float issues
+  quantity    Int      // total available
+  sold        Int      @default(0) // confirmed, paid tickets
+  reserved    Int      @default(0) // held by pending (unpaid) orders - released if the order expires/fails
+
+  tickets     Ticket[]
+  orderItems  OrderItem[]
+}
+
+// --- Referral / discount codes ---
+model Referral {
+  id           String   @id @default(cuid())
+  code         String   @unique
+  ownerName    String?  // who this link belongs to, for payout/tracking
+  discountPct  Int      @default(0) // % off, 0 if it's just for tracking
+  createdAt    DateTime @default(now())
+
+  orders       Order[]
+}
+
+// --- Buyer info + order, all in one place ---
+model Order {
+  id            String    @id @default(cuid())
+  buyerName     String
+  buyerEmail    String
+  buyerPhone    String
+  amount        Int       // final amount charged, in paise
+  status        String    @default("pending") // pending | paid | expired
+  razorpayOrderId   String? @unique
+  razorpayPaymentId String?
+  referralId    String?
+  referral      Referral? @relation(fields: [referralId], references: [id])
+  userId        String?
+  user          User?     @relation(fields: [userId], references: [id])
+  createdAt     DateTime  @default(now())
+
+  items         OrderItem[]
+  tickets       Ticket[]
+}
+
+model OrderItem {
+  id           String     @id @default(cuid())
+  orderId      String
+  order        Order      @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  ticketTypeId String
+  ticketType   TicketType @relation(fields: [ticketTypeId], references: [id])
+  quantity     Int
+  unitPrice    Int
+}
+
+// --- Individual tickets (one row per seat/pass, each with its own QR) ---
+model Ticket {
+  id           String     @id @default(cuid())
+  code         String     @unique // encoded into the QR
+  orderId      String
+  order        Order      @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  ticketTypeId String
+  ticketType   TicketType @relation(fields: [ticketTypeId], references: [id])
+  attendeeName String?
+  checkedIn    Boolean    @default(false)
+  checkedInAt  DateTime?
+  createdAt    DateTime   @default(now())
+}
