@@ -1,115 +1,131 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, Suspense } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
-import { Suspense } from "react";
-import { resetRecaptcha, sendOtp } from "../../lib/firebaseClient";
+import {
+  signInWithGoogle,
+  sendEmailLoginLink,
+  isEmailLoginLink,
+  completeEmailLogin,
+  completeEmailLoginWithEmail,
+} from "../../lib/firebaseClient";
+
+async function establishSession(credential, fallbackName) {
+  const idToken = await credential.user.getIdToken();
+  const res = await fetch("/api/auth/session", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ idToken, name: fallbackName || undefined }),
+  });
+  if (!res.ok) {
+    const data = await res.json().catch(() => ({}));
+    throw new Error(data.error || "Could not create your login session.");
+  }
+}
+
+function authErrorMessage(err) {
+  const code = err?.code || "";
+  if (code === "auth/invalid-api-key" || code === "auth/configuration-not-found") {
+    return "Login has not been configured yet. Please contact the event organiser.";
+  }
+  if (code === "auth/operation-not-allowed") {
+    return "This sign-in method isn't enabled yet. Please contact the event organiser.";
+  }
+  if (code === "auth/unauthorized-domain") {
+    return "This website domain is not authorised for login yet.";
+  }
+  if (code === "auth/popup-closed-by-user" || code === "auth/cancelled-popup-request") {
+    return ""; // user just closed the Google popup - not a real error
+  }
+  if (code === "auth/network-request-failed") {
+    return "We couldn't reach the login service. Check your connection and try again.";
+  }
+  return code ? `Couldn't log you in (${code}). Please try again shortly.` : err?.message || "Couldn't log you in. Please try again shortly.";
+}
 
 function LoginContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const next = searchParams.get("next") || "/my-tickets";
 
-  const [step, setStep] = useState("phone"); // phone | otp
-  const [phone, setPhone] = useState("");
-  const [otp, setOtp] = useState("");
+  const [mode, setMode] = useState("choose"); // choose | email-sent | needs-email-confirm
+  const [email, setEmail] = useState("");
   const [name, setName] = useState("");
-  const [confirmationResult, setConfirmationResult] = useState(null);
+  const [confirmEmail, setConfirmEmail] = useState("");
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
 
-  function toE164(raw) {
-    const digits = raw.replace(/\D/g, "");
-    if (raw.trim().startsWith("+")) return `+${digits}`;
-    // Accept the common 91xxxxxxxxxx format as well as a local 10-digit
-    // Indian number. Previously this produced +9191xxxxxxxxxx.
-    if (digits.startsWith("91") && digits.length === 12) return `+${digits}`;
-    // Default to India country code since that's this event's audience -
-    // change this if you're running the event elsewhere.
-    return `+91${digits}`;
-  }
+  // If this page was opened from the sign-in link in the user's email,
+  // finish the login automatically.
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    if (!isEmailLoginLink(window.location.href)) return;
 
-  useEffect(() => () => resetRecaptcha(), []);
+    (async () => {
+      setLoading(true);
+      try {
+        const { credential, name: savedName } = await completeEmailLogin(window.location.href);
+        await establishSession(credential, savedName);
+        router.push(next);
+        router.refresh();
+      } catch (err) {
+        if (err.needsEmail) {
+          setMode("needs-email-confirm");
+        } else {
+          setError(authErrorMessage(err));
+        }
+      } finally {
+        setLoading(false);
+      }
+    })();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
-  function phoneAuthError(err) {
-    const code = err?.code || "";
-    if (code === "auth/invalid-api-key" || code === "auth/configuration-not-found") {
-      return "Phone login has not been configured yet. Please contact the event organiser.";
-    }
-    if (code === "auth/operation-not-allowed") {
-      return "Phone sign-in is not enabled in Firebase yet. Please contact the event organiser.";
-    }
-    if (code === "auth/unauthorized-domain") {
-      return "This website domain is not authorised for phone login yet.";
-    }
-    if (code === "auth/too-many-requests" || code === "auth/quota-exceeded") {
-      return "SMS sending is temporarily unavailable. Please try again later.";
-    }
-    if (code === "auth/invalid-phone-number") {
-      return "Enter a valid phone number, including the correct country code.";
-    }
-    if (code === "auth/invalid-app-credential" || code === "auth/captcha-check-failed") {
-      return "Security verification failed. Check that raasmahotsav.vercel.app is authorised in Firebase, then try again.";
-    }
-    if (code === "auth/billing-not-enabled") {
-      return "Firebase billing must be enabled before it can send SMS codes.";
-    }
-    if (code === "auth/network-request-failed") {
-      return "We couldn't reach Firebase. Check your connection and try again.";
-    }
-    return code
-      ? `Couldn't send the code (${code}). Please try again shortly.`
-      : "Couldn't send the code. Please try again shortly.";
-  }
-
-  async function handleSendOtp(e) {
-    e.preventDefault();
+  async function handleGoogle() {
     setError("");
-    const normalizedPhone = phone.trim().replace(/[\s()-]/g, "");
-    if (!/^(?:\+91|91)?[6-9]\d{9}$/.test(normalizedPhone)) {
-      setError("Enter a valid 10-digit Indian mobile number.");
-      return;
-    }
     setLoading(true);
     try {
-      const result = await sendOtp(toE164(phone), "recaptcha-container");
-      setConfirmationResult(result);
-      setStep("otp");
+      const credential = await signInWithGoogle();
+      await establishSession(credential);
+      router.push(next);
+      router.refresh();
     } catch (err) {
-      console.error(err);
-      setError(phoneAuthError(err));
+      const msg = authErrorMessage(err);
+      if (msg) setError(msg);
     } finally {
       setLoading(false);
     }
   }
 
-  async function handleVerifyOtp(e) {
+  async function handleSendLink(e) {
     e.preventDefault();
     setError("");
-    if (otp.trim().length < 6) {
-      setError("Enter the 6-digit code.");
+    if (!email.includes("@")) {
+      setError("Enter a valid email address.");
       return;
     }
     setLoading(true);
     try {
-      const credential = await confirmationResult.confirm(otp.trim());
-      const idToken = await credential.user.getIdToken();
+      await sendEmailLoginLink(email.trim(), name.trim());
+      setMode("email-sent");
+    } catch (err) {
+      setError(authErrorMessage(err));
+    } finally {
+      setLoading(false);
+    }
+  }
 
-      const res = await fetch("/api/auth/phone", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ idToken, name: name || undefined }),
-      });
-      if (!res.ok) {
-        const data = await res.json().catch(() => ({}));
-        throw new Error(data.error || "Could not create your login session.");
-      }
-
+  async function handleConfirmEmail(e) {
+    e.preventDefault();
+    setError("");
+    setLoading(true);
+    try {
+      const { credential, name: savedName } = await completeEmailLoginWithEmail(window.location.href, confirmEmail.trim());
+      await establishSession(credential, savedName);
       router.push(next);
       router.refresh();
     } catch (err) {
-      console.error(err);
-      setError(err.message || "That code didn't match. Check the SMS and try again.");
+      setError(authErrorMessage(err));
     } finally {
       setLoading(false);
     }
@@ -118,64 +134,67 @@ function LoginContent() {
   return (
     <div className="container" style={{ paddingTop: 64, paddingBottom: 64, maxWidth: 420 }}>
       <h1 style={{ fontSize: 28 }}>Log in</h1>
-      <p style={{ fontSize: 14, color: "rgba(242,234,216,0.6)", marginTop: 6 }}>
-        {step === "phone"
-          ? "We'll text you a one-time code — no password needed."
-          : `Enter the code we sent to ${phone}.`}
-      </p>
 
-      {step === "phone" ? (
-        <form onSubmit={handleSendOtp} style={{ marginTop: 24 }}>
-          <div className="field">
-            <label>Phone number</label>
-            <input
-              value={phone}
-              onChange={(e) => setPhone(e.target.value)}
-              placeholder="98765 43210"
-              inputMode="tel"
-              autoFocus
-            />
-          </div>
-          {error && <p className="error-text">{error}</p>}
-          <button className="btn btn-primary" type="submit" disabled={loading} style={{ width: "100%", marginTop: 8 }}>
-            {loading ? "Sending…" : "Send code"}
-          </button>
-        </form>
-      ) : (
-        <form onSubmit={handleVerifyOtp} style={{ marginTop: 24 }}>
-          <div className="field">
-            <label>6-digit code</label>
-            <input
-              value={otp}
-              onChange={(e) => setOtp(e.target.value)}
-              placeholder="123456"
-              inputMode="numeric"
-              maxLength={6}
-              autoFocus
-              style={{ letterSpacing: "0.3em", fontSize: 20, textAlign: "center" }}
-            />
-          </div>
-          <div className="field">
-            <label>Your name (so we know it's you)</label>
-            <input value={name} onChange={(e) => setName(e.target.value)} placeholder="Optional" />
-          </div>
-          {error && <p className="error-text">{error}</p>}
-          <button className="btn btn-primary" type="submit" disabled={loading} style={{ width: "100%", marginTop: 8 }}>
-            {loading ? "Verifying…" : "Verify & log in"}
-          </button>
+      {mode === "choose" && (
+        <>
+          <p style={{ fontSize: 14, color: "rgba(242,234,216,0.6)", marginTop: 6 }}>
+            So you can find your tickets again later, from any device.
+          </p>
+
           <button
-            type="button"
-            className="btn btn-outline"
-            style={{ width: "100%", marginTop: 10 }}
-            onClick={() => { resetRecaptcha(); setStep("phone"); setOtp(""); setError(""); }}
+            className="btn btn-primary"
+            style={{ width: "100%", marginTop: 24 }}
+            onClick={handleGoogle}
+            disabled={loading}
           >
-            Use a different number
+            Continue with Google
+          </button>
+
+          <div style={{ textAlign: "center", margin: "20px 0", fontSize: 13, color: "rgba(242,234,216,0.4)" }}>or</div>
+
+          <form onSubmit={handleSendLink}>
+            <div className="field">
+              <label>Email address</label>
+              <input type="email" value={email} onChange={(e) => setEmail(e.target.value)} placeholder="you@example.com" autoFocus />
+            </div>
+            <div className="field">
+              <label>Your name (so we know it's you)</label>
+              <input value={name} onChange={(e) => setName(e.target.value)} placeholder="Optional" />
+            </div>
+            {error && <p className="error-text">{error}</p>}
+            <button className="btn btn-outline" type="submit" style={{ width: "100%" }} disabled={loading}>
+              {loading ? "Sending…" : "Email me a login link"}
+            </button>
+          </form>
+        </>
+      )}
+
+      {mode === "email-sent" && (
+        <div style={{ marginTop: 24 }}>
+          <p style={{ color: "rgba(242,234,216,0.8)" }}>
+            Check <strong>{email}</strong> for a login link — open it on this device to finish logging in.
+          </p>
+          <button className="btn btn-outline" style={{ marginTop: 16 }} onClick={() => setMode("choose")}>
+            Use a different method
+          </button>
+        </div>
+      )}
+
+      {mode === "needs-email-confirm" && (
+        <form onSubmit={handleConfirmEmail} style={{ marginTop: 24 }}>
+          <p style={{ fontSize: 14, color: "rgba(242,234,216,0.7)" }}>
+            Confirm the email you requested this link with.
+          </p>
+          <div className="field">
+            <label>Email address</label>
+            <input type="email" value={confirmEmail} onChange={(e) => setConfirmEmail(e.target.value)} autoFocus />
+          </div>
+          {error && <p className="error-text">{error}</p>}
+          <button className="btn btn-primary" type="submit" style={{ width: "100%" }} disabled={loading}>
+            {loading ? "Verifying…" : "Finish logging in"}
           </button>
         </form>
       )}
-
-      {/* Firebase attaches its invisible reCAPTCHA challenge here. */}
-      <div id="recaptcha-container" />
     </div>
   );
 }

@@ -29,7 +29,7 @@ export default function MyTicketsPage() {
       <div className="container" style={{ paddingTop: 80, maxWidth: 480 }}>
         <h1 style={{ fontSize: 26 }}>Log in to see your tickets</h1>
         <p style={{ marginTop: 10, color: "rgba(242,234,216,0.7)" }}>
-          Tickets you've bought while logged in with your phone number show up here.
+          Tickets you've bought while logged in show up here — with Google or email, from any device.
         </p>
         <Link href="/login?next=/my-tickets" className="btn btn-primary" style={{ marginTop: 20 }}>
           Log in

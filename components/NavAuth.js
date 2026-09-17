@@ -4,19 +4,19 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 
 // Small auth-aware nav fragment: shows "Log in" or "My tickets / Log out"
-// depending on the buyer's phone-login session. Used on every public page.
+// depending on the buyer's login session. Used on every public page.
 export default function NavAuth() {
   const [user, setUser] = useState(undefined); // undefined = loading, null = logged out
 
   useEffect(() => {
-    fetch("/api/auth/phone")
+    fetch("/api/auth/session")
       .then((r) => r.json())
       .then((d) => setUser(d.user))
       .catch(() => setUser(null));
   }, []);
 
   async function handleLogout() {
-    await fetch("/api/auth/phone", { method: "DELETE" });
+    await fetch("/api/auth/session", { method: "DELETE" });
     setUser(null);
     window.location.href = "/";
   }

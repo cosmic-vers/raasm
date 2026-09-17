@@ -20,15 +20,16 @@ model Admin {
   createdAt DateTime @default(now())
 }
 
-// --- Buyer account, identified by phone number (Firebase Phone Auth) ---
+// --- Buyer account, identified by email or Google (Firebase Auth) ---
 model User {
-  id         String   @id @default(cuid())
-  phone      String   @unique // E.164 format, e.g. +919876543210
-  firebaseUid String  @unique
-  name       String?
-  createdAt  DateTime @default(now())
+  id          String   @id @default(cuid())
+  email       String?  @unique
+  phone       String?  @unique // kept for any accounts created back when this was phone-based
+  firebaseUid String   @unique
+  name        String?
+  createdAt   DateTime @default(now())
 
-  orders     Order[]
+  orders      Order[]
 }
 
 // --- The event itself (single-event site, so usually just one row) ---
