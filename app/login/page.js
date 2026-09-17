@@ -48,7 +48,18 @@ function LoginContent() {
     if (code === "auth/invalid-phone-number") {
       return "Enter a valid phone number, including the correct country code.";
     }
-    return "Couldn't send the code. Please try again shortly.";
+    if (code === "auth/invalid-app-credential" || code === "auth/captcha-check-failed") {
+      return "Security verification failed. Check that raasmahotsav.vercel.app is authorised in Firebase, then try again.";
+    }
+    if (code === "auth/billing-not-enabled") {
+      return "Firebase billing must be enabled before it can send SMS codes.";
+    }
+    if (code === "auth/network-request-failed") {
+      return "We couldn't reach Firebase. Check your connection and try again.";
+    }
+    return code
+      ? `Couldn't send the code (${code}). Please try again shortly.`
+      : "Couldn't send the code. Please try again shortly.";
   }
 
   async function handleSendOtp(e) {
