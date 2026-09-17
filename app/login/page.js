@@ -31,6 +31,26 @@ function LoginContent() {
 
   useEffect(() => () => resetRecaptcha(), []);
 
+  function phoneAuthError(err) {
+    const code = err?.code || "";
+    if (code === "auth/invalid-api-key" || code === "auth/configuration-not-found") {
+      return "Phone login has not been configured yet. Please contact the event organiser.";
+    }
+    if (code === "auth/operation-not-allowed") {
+      return "Phone sign-in is not enabled in Firebase yet. Please contact the event organiser.";
+    }
+    if (code === "auth/unauthorized-domain") {
+      return "This website domain is not authorised for phone login yet.";
+    }
+    if (code === "auth/too-many-requests" || code === "auth/quota-exceeded") {
+      return "SMS sending is temporarily unavailable. Please try again later.";
+    }
+    if (code === "auth/invalid-phone-number") {
+      return "Enter a valid phone number, including the correct country code.";
+    }
+    return "Couldn't send the code. Please try again shortly.";
+  }
+
   async function handleSendOtp(e) {
     e.preventDefault();
     setError("");
@@ -46,9 +66,7 @@ function LoginContent() {
       setStep("otp");
     } catch (err) {
       console.error(err);
-      setError(err.message?.includes("too-many-requests")
-        ? "Too many attempts from this device. Try again later."
-        : "Couldn't send the code. Check the number and try again.");
+      setError(phoneAuthError(err));
     } finally {
       setLoading(false);
     }
