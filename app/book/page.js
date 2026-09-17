@@ -48,17 +48,13 @@ function BookingForm() {
   }, [ticketTypeId]);
 
   useEffect(() => {
-    fetch("/api/auth/phone")
+    fetch("/api/auth/session")
       .then((r) => r.json())
       .then((d) => {
         if (d.user) {
           setForm((f) => ({
             ...f,
-            // Google and email accounts don't have a verified phone number.
-            // Only prefill this field when the session actually contains one.
-            buyerPhone: f.buyerPhone || (/^\+91\d+$/.test(d.user.phone || "")
-              ? d.user.phone.replace(/^\+91/, "")
-              : ""),
+            buyerEmail: f.buyerEmail || d.user.email || "",
             buyerName: f.buyerName || d.user.name || "",
           }));
         }
