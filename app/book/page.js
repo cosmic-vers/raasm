@@ -54,7 +54,11 @@ function BookingForm() {
         if (d.user) {
           setForm((f) => ({
             ...f,
-            buyerPhone: f.buyerPhone || d.user.phone.replace(/^\+91/, ""),
+            // Google and email accounts don't have a verified phone number.
+            // Only prefill this field when the session actually contains one.
+            buyerPhone: f.buyerPhone || (/^\+91\d+$/.test(d.user.phone || "")
+              ? d.user.phone.replace(/^\+91/, "")
+              : ""),
             buyerName: f.buyerName || d.user.name || "",
           }));
         }
