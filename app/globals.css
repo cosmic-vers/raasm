@@ -277,34 +277,38 @@ th {
   font-weight: 500;
 }
 
-/* --- Hero: dancer figures flanking the text, semi-transparent and gently swaying --- */
+/* --- Hero: dancer figures woven into the background — large, faded at the
+   edges so they melt into the dark gradient instead of reading as pasted-on
+   corner icons --- */
 .hero-dancer {
   position: absolute;
-  bottom: 0;
-  width: 150px;
-  opacity: 0.55;
+  bottom: -4%;
+  width: 220px;
+  opacity: 0.28;
   pointer-events: none;
-  display: none;
   z-index: 0;
+  filter: saturate(0.85);
+  -webkit-mask-image: radial-gradient(ellipse 75% 85% at 50% 100%, black 35%, transparent 92%);
+  mask-image: radial-gradient(ellipse 75% 85% at 50% 100%, black 35%, transparent 92%);
 }
 .hero-dancer-left {
-  left: -10px;
+  left: -6%;
   transform-origin: bottom center;
 }
 .hero-dancer-right {
-  right: -10px;
+  right: -6%;
   transform-origin: bottom center;
 }
 @media (min-width: 700px) {
   .hero-dancer {
-    display: block;
-    width: 190px;
-    opacity: 0.7;
+    width: 340px;
+    opacity: 0.4;
   }
 }
 @media (min-width: 1100px) {
   .hero-dancer {
-    width: 230px;
+    width: 440px;
+    opacity: 0.45;
   }
 }
 .hero-dancer-sway {
@@ -324,4 +328,42 @@ th {
 }
 @media (prefers-reduced-motion: reduce) {
   .hero-dancer-sway { animation: none; }
+}
+
+/* --- Hero centerpiece: the deity image, front and center above the title --- */
+.deity-frame {
+  position: relative;
+  width: 168px;
+  height: 168px;
+  margin: 0 auto 22px;
+  border-radius: 50%;
+  z-index: 1;
+}
+.deity-frame::before {
+  content: "";
+  position: absolute;
+  inset: -22px;
+  background: radial-gradient(circle, rgba(240, 178, 60, 0.45), rgba(224, 52, 138, 0.18) 55%, transparent 75%);
+  filter: blur(6px);
+  z-index: 0;
+}
+.deity-image {
+  position: relative;
+  z-index: 1;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: top center;
+  border-radius: 50%;
+  border: 3px solid var(--gold);
+  box-shadow:
+    0 0 0 6px rgba(240, 178, 60, 0.14),
+    0 8px 32px rgba(0, 0, 0, 0.55);
+}
+@media (min-width: 700px) {
+  .deity-frame { width: 220px; height: 220px; margin-bottom: 26px; }
+  .deity-frame::before { inset: -30px; }
+}
+@media (min-width: 1100px) {
+  .deity-frame { width: 260px; height: 260px; }
 }

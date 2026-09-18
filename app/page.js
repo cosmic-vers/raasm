@@ -87,6 +87,9 @@ function HomeContent() {
         />
 
         <div className="container" style={{ position: "relative", zIndex: 1 }}>
+          <div className="hero-rise hero-rise-1 deity-frame">
+            <img src="/deity.webp" alt="Deity blessing the festival" className="deity-image" />
+          </div>
           {refCode && (
             <p className="hero-rise hero-rise-1" style={{ fontSize: 13, color: "var(--gold)", marginBottom: 8 }}>
               Referred by code {refCode.toUpperCase()} — it'll be applied at checkout.
