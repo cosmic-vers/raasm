@@ -1,16 +1,22 @@
-@import url("https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,600;9..144,700&family=Work+Sans:wght@400;500;600&display=swap");
+@import url("https://fonts.googleapis.com/css2?family=Yeseva+One&family=Fraunces:opsz,wght@9..144,400;9..144,600;9..144,700&family=Work+Sans:wght@400;500;600;700&display=swap");
 
 :root {
-  --ink: #14171f;
-  --ink-panel: #1c2029;
-  --paper: #f2ead8;
-  --paper-dim: #e7dcc2;
-  --gold: #e0a83b;
-  --gold-dim: #a9812f;
-  --line: rgba(242, 234, 216, 0.14);
-  --text-on-ink: #f2ead8;
-  --text-on-paper: #1c1a15;
-  --radius: 3px;
+  /* Deep wine/maroon, gold, magenta and marigold-orange - pulled from the
+     Raas Mahotsav poster's palette instead of a generic dark theme. */
+  --ink: #22070f;
+  --ink-panel: #34101c;
+  --paper: #fff3df;
+  --paper-dim: #f3e2bd;
+  --gold: #f0b23c;
+  --gold-dim: #c98f2e;
+  --magenta: #e0348a;
+  --orange: #f2711c;
+  --line: rgba(247, 217, 195, 0.16);
+  --text-on-ink: #f9ead9;
+  --text-on-paper: #2a1508;
+  --radius: 6px;
+  --festive-gradient: linear-gradient(90deg, var(--gold), var(--orange) 45%, var(--magenta));
+  --display: "Yeseva One", Georgia, serif;
   --serif: "Fraunces", Georgia, serif;
   --sans: "Work Sans", -apple-system, sans-serif;
 }
@@ -20,7 +26,11 @@
 html, body {
   margin: 0;
   padding: 0;
-  background: var(--ink);
+  background:
+    radial-gradient(ellipse 900px 500px at 15% -10%, rgba(240, 178, 60, 0.16), transparent 60%),
+    radial-gradient(ellipse 700px 500px at 100% 10%, rgba(224, 52, 138, 0.14), transparent 55%),
+    var(--ink);
+  background-attachment: fixed;
   color: var(--text-on-ink);
   font-family: var(--sans);
   -webkit-font-smoothing: antialiased;
@@ -32,6 +42,8 @@ h1, h2, h3 {
   line-height: 1.05;
   margin: 0;
 }
+
+h2 { color: var(--gold); }
 
 a { color: inherit; }
 
@@ -91,7 +103,7 @@ input:focus-visible {
   position: absolute;
   width: 18px;
   height: 18px;
-  background: var(--ink);
+  background: var(--ink-panel);
   border-radius: 50%;
   left: -9px;
 }
@@ -114,9 +126,18 @@ input:focus-visible {
 
 .btn-primary {
   background: var(--gold);
-  color: #1c1305;
+  color: #2a1608;
 }
-.btn-primary:hover { background: #ecb650; box-shadow: 0 6px 20px rgba(224, 168, 59, 0.25); }
+.btn-primary:hover { background: #f7c266; box-shadow: 0 6px 20px rgba(240, 178, 60, 0.3); }
+
+.btn-festive {
+  background: var(--festive-gradient);
+  background-size: 160% 100%;
+  background-position: 0% 0%;
+  color: #2a0a16;
+  font-weight: 700;
+}
+.btn-festive:hover { background-position: 100% 0%; box-shadow: 0 8px 24px rgba(224, 52, 138, 0.35); }
 
 .btn-outline {
   background: transparent;
@@ -124,6 +145,33 @@ input:focus-visible {
   color: var(--text-on-ink);
 }
 .btn-outline:hover { border-color: var(--gold); }
+
+/* Gradient headline text, used sparingly - the hero title only - to echo
+   the poster's multicolour lettering without doing it on every heading. */
+.gradient-text {
+  background: var(--festive-gradient);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
+/* A row of small "marigold" dots, standing in for the poster's string
+   lights/garlands as a section divider - festive but cheap to render. */
+.festive-divider {
+  display: flex;
+  justify-content: center;
+  gap: 14px;
+  padding: 4px 0;
+}
+.festive-divider span {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: var(--gold);
+  box-shadow: 0 0 8px rgba(240, 178, 60, 0.7);
+}
+.festive-divider span:nth-child(3n+2) { background: var(--magenta); box-shadow: 0 0 8px rgba(224, 52, 138, 0.6); }
+.festive-divider span:nth-child(3n+3) { background: var(--orange); box-shadow: 0 0 8px rgba(242, 113, 28, 0.6); }
 
 .field {
   display: flex;
@@ -171,6 +219,7 @@ input:focus, textarea:focus {
 
 @media (max-width: 640px) {
   .container { padding: 0 18px; }
+  .hero-lanterns { display: none !important; }
   .ticket-stub { flex-direction: column; }
   .ticket-stub .stub-end {
     width: auto;

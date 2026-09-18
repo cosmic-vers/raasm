@@ -4,6 +4,7 @@ import { useEffect, useState, Suspense } from "react";
 import { useSearchParams } from "next/navigation";
 import Link from "next/link";
 import NavAuth from "../components/NavAuth";
+import { MarigoldGarland, Lantern, DandiyaSticks, Diya } from "../components/FestiveMotifs";
 
 function formatDateRange(startsAt, endsAt) {
   const start = new Date(startsAt);
@@ -45,19 +46,31 @@ function HomeContent() {
 
   return (
     <main>
-      <nav style={{ padding: "16px 0", borderBottom: "1px solid var(--line)" }}>
-        <div className="container" style={{ display: "flex", gap: 20, fontSize: 14, alignItems: "center", justifyContent: "space-between", flexWrap: "wrap" }}>
-          <div style={{ display: "flex", gap: 20 }}>
-            <Link href="/menu" style={{ color: "rgba(242,234,216,0.75)" }}>Food & Drinks</Link>
-            <Link href="/stalls" style={{ color: "rgba(242,234,216,0.75)" }}>Stalls</Link>
-            <Link href="/location" style={{ color: "rgba(242,234,216,0.75)" }}>Getting there</Link>
+      <nav style={{ padding: "14px 0 0", borderBottom: "1px solid var(--line)" }}>
+        <div className="container" style={{ display: "flex", gap: 20, fontSize: 14, alignItems: "center", justifyContent: "space-between", flexWrap: "wrap", paddingBottom: 14 }}>
+          <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
+            <img src="/logo.png" alt={event.title} width={44} height={44} style={{ borderRadius: "50%" }} />
+            <div style={{ display: "flex", gap: 20 }}>
+              <Link href="/menu" style={{ color: "rgba(242,234,216,0.75)" }}>Food & Drinks</Link>
+              <Link href="/stalls" style={{ color: "rgba(242,234,216,0.75)" }}>Stalls</Link>
+              <Link href="/location" style={{ color: "rgba(242,234,216,0.75)" }}>Getting there</Link>
+            </div>
           </div>
           <NavAuth />
         </div>
+        <MarigoldGarland height={40} />
       </nav>
 
       {/* Hero */}
-      <section style={{ padding: "72px 0 48px", borderBottom: "1px solid var(--line)" }}>
+      <section style={{ padding: "56px 0 48px", borderBottom: "1px solid var(--line)", position: "relative", overflow: "hidden" }}>
+        <div className="hero-rise hero-rise-1 hero-lanterns" style={{ position: "absolute", top: 0, left: "6%", display: "flex", gap: 28 }}>
+          <Lantern size={34} color="var(--magenta)" />
+          <Lantern size={26} color="var(--orange)" style={{ marginTop: 18 }} />
+        </div>
+        <div className="hero-rise hero-rise-1 hero-lanterns" style={{ position: "absolute", top: 0, right: "6%", display: "flex", gap: 28 }}>
+          <Lantern size={26} color="var(--orange)" style={{ marginTop: 18 }} />
+          <Lantern size={34} color="var(--magenta)" />
+        </div>
         <div className="container">
           {refCode && (
             <p className="hero-rise hero-rise-1" style={{ fontSize: 13, color: "var(--gold)", marginBottom: 8 }}>
@@ -67,7 +80,7 @@ function HomeContent() {
           <p className="hero-rise hero-rise-1" style={{ fontSize: 14, letterSpacing: "0.02em", color: "var(--gold)", marginBottom: 14 }}>
             {formatDateRange(event.startsAt, event.endsAt)}
           </p>
-          <h1 className="hero-rise hero-rise-2" style={{ fontSize: "clamp(38px, 6vw, 64px)", maxWidth: 700 }}>{event.title}</h1>
+          <h1 className="hero-rise hero-rise-2 gradient-text" style={{ fontFamily: "var(--display)", fontWeight: 400, fontSize: "clamp(40px, 7vw, 72px)", maxWidth: 760, lineHeight: 1.08 }}>{event.title}</h1>
           {event.tagline && (
             <p className="hero-rise hero-rise-3" style={{ fontSize: 19, marginTop: 18, maxWidth: 560, color: "rgba(242,234,216,0.8)" }}>
               {event.tagline}
@@ -77,10 +90,12 @@ function HomeContent() {
             {event.venue}{event.address ? ` — ${event.address}` : ""}
           </p>
           <div className="hero-rise hero-rise-4" style={{ marginTop: 30 }}>
-            <a href="#tickets" className="btn btn-primary">Get tickets</a>
+            <a href="#tickets" className="btn btn-festive">Get tickets</a>
           </div>
         </div>
       </section>
+
+      <MarigoldGarland height={36} />
 
       {/* About */}
       <section style={{ padding: "48px 0" }}>
@@ -95,7 +110,10 @@ function HomeContent() {
       {/* Tickets */}
       <section id="tickets" style={{ padding: "48px 0", borderTop: "1px solid var(--line)" }}>
         <div className="container">
-          <h2 style={{ fontSize: 26, marginBottom: 22 }}>Tickets</h2>
+          <div style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 22 }}>
+            <DandiyaSticks size={34} />
+            <h2 style={{ fontSize: 26 }}>Tickets</h2>
+          </div>
           <div style={{ display: "grid", gap: 16, maxWidth: 640 }}>
             {event.ticketTypes.map((tt) => {
               const soldOut = tt.sold >= tt.quantity;
@@ -152,6 +170,11 @@ function HomeContent() {
       )}
 
       <footer style={{ padding: "32px 0", borderTop: "1px solid var(--line)", textAlign: "center" }}>
+        <div style={{ display: "flex", justifyContent: "center", alignItems: "center", gap: 14, marginBottom: 14 }}>
+          <Diya size={28} />
+          <img src="/logo.png" alt={event.title} width={40} height={40} style={{ borderRadius: "50%" }} />
+          <Diya size={28} style={{ transform: "scaleX(-1)" }} />
+        </div>
         <p style={{ fontSize: 13, color: "rgba(242,234,216,0.6)" }}>
           <Link href="/menu">Food & Drinks</Link> · <Link href="/stalls">Stalls</Link> · <Link href="/location">Getting there</Link>
         </p>

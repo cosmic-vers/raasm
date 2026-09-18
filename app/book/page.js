@@ -126,9 +126,12 @@ function BookingForm() {
 
   if (tickets) {
     return (
-      <div className="container" style={{ paddingTop: 80, maxWidth: 480 }}>
-        <h1 style={{ fontSize: 28 }}>You're in 🎟️</h1>
-        <p style={{ marginTop: 10, color: "rgba(242,234,216,0.8)" }}>
+      <div className="container" style={{ paddingTop: 56, maxWidth: 480 }}>
+        <div style={{ textAlign: "center", marginBottom: 16 }}>
+          <img src="/logo.png" alt="" width={56} height={56} style={{ borderRadius: "50%" }} />
+        </div>
+        <h1 style={{ fontSize: 28, textAlign: "center" }}>You're in 🎟️</h1>
+        <p style={{ marginTop: 10, color: "rgba(242,234,216,0.8)", textAlign: "center" }}>
           {tickets.length} ticket{tickets.length > 1 ? "s" : ""} booked. A confirmation has been recorded — bring the QR code(s) below to the door.
         </p>
         <div style={{ display: "grid", gap: 14, marginTop: 24 }}>
@@ -136,7 +139,7 @@ function BookingForm() {
             <TicketQr key={t.id} code={t.code} />
           ))}
         </div>
-        <div style={{ display: "flex", gap: 12, marginTop: 24, flexWrap: "wrap" }}>
+        <div style={{ display: "flex", gap: 12, marginTop: 24, flexWrap: "wrap", justifyContent: "center" }}>
           <Link href="/" className="btn btn-outline">Back to event</Link>
           <Link href="/my-tickets" className="btn btn-primary">View in My tickets</Link>
         </div>
@@ -145,7 +148,10 @@ function BookingForm() {
   }
 
   return (
-    <div className="container" style={{ paddingTop: 64, paddingBottom: 64, maxWidth: 480 }}>
+    <div className="container" style={{ paddingTop: 40, paddingBottom: 64, maxWidth: 480 }}>
+      <div style={{ textAlign: "center", marginBottom: 20 }}>
+        <img src="/logo.png" alt="" width={44} height={44} style={{ borderRadius: "50%" }} />
+      </div>
       <Link href="/" style={{ fontSize: 14, color: "rgba(242,234,216,0.6)" }}>← Back</Link>
       <h1 style={{ fontSize: 28, marginTop: 14 }}>Book your ticket</h1>
       {ticketType && (

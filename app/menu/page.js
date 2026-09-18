@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
+import { FestiveHeader, FestiveFooter } from "../../components/PageChrome";
 
 export default function MenuPage() {
   const [items, setItems] = useState([]);
@@ -17,7 +18,8 @@ export default function MenuPage() {
   const categories = [...new Set(items.map((i) => i.category || "Other"))];
 
   return (
-    <main className="container" style={{ paddingTop: 56, paddingBottom: 56 }}>
+    <main className="container" style={{ paddingTop: 32, paddingBottom: 0 }}>
+      <FestiveHeader />
       <Link href="/" style={{ fontSize: 14, color: "rgba(242,234,216,0.6)" }}>← Back to event</Link>
       <h1 style={{ fontSize: 34, marginTop: 16 }}>Food & Drinks</h1>
       <p style={{ marginTop: 8, color: "rgba(242,234,216,0.7)" }}>What's available on-site.</p>
@@ -50,6 +52,7 @@ export default function MenuPage() {
           </div>
         </section>
       ))}
+      <FestiveFooter />
     </main>
   );
 }

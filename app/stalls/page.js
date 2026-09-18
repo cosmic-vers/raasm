@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
+import { FestiveHeader, FestiveFooter } from "../../components/PageChrome";
 
 export default function StallsPage() {
   const [stalls, setStalls] = useState([]);
@@ -17,7 +18,8 @@ export default function StallsPage() {
   const categories = [...new Set(stalls.map((s) => s.category || "Other"))];
 
   return (
-    <main className="container" style={{ paddingTop: 56, paddingBottom: 56 }}>
+    <main className="container" style={{ paddingTop: 32, paddingBottom: 0 }}>
+      <FestiveHeader />
       <Link href="/" style={{ fontSize: 14, color: "rgba(242,234,216,0.6)" }}>← Back to event</Link>
       <h1 style={{ fontSize: 34, marginTop: 16 }}>Stalls</h1>
       <p style={{ marginTop: 8, color: "rgba(242,234,216,0.7)" }}>Who'll be there on the day.</p>
@@ -46,6 +48,7 @@ export default function StallsPage() {
           </div>
         </section>
       ))}
+      <FestiveFooter />
     </main>
   );
 }

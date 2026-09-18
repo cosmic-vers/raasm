@@ -132,8 +132,11 @@ function LoginContent() {
   }
 
   return (
-    <div className="container" style={{ paddingTop: 64, paddingBottom: 64, maxWidth: 420 }}>
-      <h1 style={{ fontSize: 28 }}>Log in</h1>
+    <div className="container" style={{ paddingTop: 48, paddingBottom: 64, maxWidth: 420 }}>
+      <div style={{ textAlign: "center", marginBottom: 20 }}>
+        <img src="/logo.png" alt="" width={52} height={52} style={{ borderRadius: "50%" }} />
+      </div>
+      <h1 style={{ fontSize: 28, textAlign: "center" }}>Log in</h1>
 
       {mode === "choose" && (
         <>

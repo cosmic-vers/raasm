@@ -2,8 +2,12 @@ import "./globals.css";
 import Providers from "./providers";
 
 export const metadata = {
-  title: "EventHub",
-  description: "Event ticketing, made simple.",
+  title: "Raas Mahotsav — Dussehra Dandiya Celebration",
+  description: "Rang · Raas · Dhamaka — three nights of Dandiya at Royal Palace. Book your entry pass.",
+  icons: {
+    icon: "/favicon-32.png",
+    apple: "/apple-touch-icon.png",
+  },
 };
 
 export default function RootLayout({ children }) {

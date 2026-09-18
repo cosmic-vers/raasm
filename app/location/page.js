@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
+import { FestiveHeader, FestiveFooter } from "../../components/PageChrome";
 
 export default function LocationPage() {
   const [event, setEvent] = useState(null);
@@ -29,7 +30,8 @@ export default function LocationPage() {
       : null);
 
   return (
-    <main className="container" style={{ paddingTop: 56, paddingBottom: 56 }}>
+    <main className="container" style={{ paddingTop: 32, paddingBottom: 0 }}>
+      <FestiveHeader />
       <Link href="/" style={{ fontSize: 14, color: "rgba(242,234,216,0.6)" }}>← Back to event</Link>
       <h1 style={{ fontSize: 34, marginTop: 16 }}>Getting there</h1>
       <p style={{ marginTop: 8, color: "rgba(242,234,216,0.8)" }}>{event.venue}</p>
@@ -57,6 +59,7 @@ export default function LocationPage() {
           Get directions
         </a>
       )}
+      <FestiveFooter />
     </main>
   );
 }
