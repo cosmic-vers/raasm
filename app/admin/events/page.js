@@ -129,6 +129,30 @@ export default function AdminEventsPage() {
             <input type="datetime-local" value={toLocalInput(event.endsAt)} onChange={(e) => setEvent({ ...event, endsAt: e.target.value })} />
           </div>
         </div>
+
+        <h3 style={{ fontSize: 16, marginTop: 8, color: "rgba(242,234,216,0.8)" }}>Homepage countdown</h3>
+        <p style={{ fontSize: 13, color: "rgba(242,234,216,0.5)", marginTop: 2, marginBottom: 12 }}>
+          Leave the date empty to automatically count down to "Starts at" above. Set it to count down to something else instead — an early-bird deadline, gates-open time, etc.
+        </p>
+        <div style={{ display: "flex", gap: 12 }}>
+          <div className="field" style={{ flex: 1 }}>
+            <label>Counts down to (optional)</label>
+            <input
+              type="datetime-local"
+              value={event.countdownTarget ? toLocalInput(event.countdownTarget) : ""}
+              onChange={(e) => setEvent({ ...event, countdownTarget: e.target.value || null })}
+            />
+          </div>
+          <div className="field" style={{ flex: 1 }}>
+            <label>Countdown label (optional)</label>
+            <input
+              value={event.countdownLabel || ""}
+              onChange={(e) => setEvent({ ...event, countdownLabel: e.target.value })}
+              placeholder='e.g. "Early-bird ends in"'
+            />
+          </div>
+        </div>
+
         {message && <p className="success-text">{message}</p>}
         <button className="btn btn-primary" disabled={saving}>{saving ? "Saving…" : "Save event"}</button>
       </form>

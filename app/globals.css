@@ -276,3 +276,22 @@ th {
   color: rgba(242, 234, 216, 0.6);
   font-weight: 500;
 }
+
+/* --- Hero layout: text + dancer illustration side by side on wide screens --- */
+.hero-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 24px;
+  align-items: center;
+}
+.hero-illustration {
+  display: none;
+}
+@media (min-width: 860px) {
+  .hero-grid {
+    grid-template-columns: 1.3fr 0.9fr;
+  }
+  .hero-illustration {
+    display: block;
+  }
+}

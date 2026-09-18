@@ -39,7 +39,7 @@ export async function PUT(req) {
   if (!session) return NextResponse.json({ error: "Unauthorized." }, { status: 401 });
 
   const body = await req.json();
-  const { id, title, tagline, description, venue, address, latitude, longitude, mapUrl, startsAt, endsAt, coverImage } = body;
+  const { id, title, tagline, description, venue, address, latitude, longitude, mapUrl, startsAt, endsAt, coverImage, countdownTarget, countdownLabel } = body;
 
   if (!id) return NextResponse.json({ error: "Event id required." }, { status: 400 });
 
@@ -57,6 +57,8 @@ export async function PUT(req) {
       startsAt: startsAt ? new Date(startsAt) : undefined,
       endsAt: endsAt ? new Date(endsAt) : undefined,
       coverImage,
+      countdownTarget: countdownTarget ? new Date(countdownTarget) : null,
+      countdownLabel: countdownLabel || null,
     },
   });
 

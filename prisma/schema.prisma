@@ -46,6 +46,11 @@ model Event {
   startsAt    DateTime
   endsAt      DateTime
   coverImage  String?
+  // Countdown shown on the homepage. Defaults to counting down to startsAt
+  // if left empty - set these explicitly to count down to something else
+  // instead (e.g. an early-bird deadline, or a gate-opening time).
+  countdownTarget DateTime?
+  countdownLabel  String?
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
 
