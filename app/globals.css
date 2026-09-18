@@ -277,21 +277,51 @@ th {
   font-weight: 500;
 }
 
-/* --- Hero layout: text + dancer illustration side by side on wide screens --- */
-.hero-grid {
-  display: grid;
-  grid-template-columns: 1fr;
-  gap: 24px;
-  align-items: center;
-}
-.hero-illustration {
+/* --- Hero: dancer figures flanking the text, semi-transparent and gently swaying --- */
+.hero-dancer {
+  position: absolute;
+  bottom: 0;
+  width: 150px;
+  opacity: 0.55;
+  pointer-events: none;
   display: none;
+  z-index: 0;
 }
-@media (min-width: 860px) {
-  .hero-grid {
-    grid-template-columns: 1.3fr 0.9fr;
-  }
-  .hero-illustration {
+.hero-dancer-left {
+  left: -10px;
+  transform-origin: bottom center;
+}
+.hero-dancer-right {
+  right: -10px;
+  transform-origin: bottom center;
+}
+@media (min-width: 700px) {
+  .hero-dancer {
     display: block;
+    width: 190px;
+    opacity: 0.7;
   }
+}
+@media (min-width: 1100px) {
+  .hero-dancer {
+    width: 230px;
+  }
+}
+.hero-dancer-sway {
+  animation: hero-dancer-sway 5s ease-in-out infinite;
+}
+.hero-dancer-right.hero-dancer-sway {
+  animation-name: hero-dancer-sway-reverse;
+  animation-delay: 0.4s;
+}
+@keyframes hero-dancer-sway {
+  0%, 100% { transform: rotate(-2.5deg) translateY(0); }
+  50% { transform: rotate(2.5deg) translateY(-8px); }
+}
+@keyframes hero-dancer-sway-reverse {
+  0%, 100% { transform: rotate(2.5deg) translateY(0); }
+  50% { transform: rotate(-2.5deg) translateY(-8px); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .hero-dancer-sway { animation: none; }
 }

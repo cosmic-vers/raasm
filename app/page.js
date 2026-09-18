@@ -72,37 +72,45 @@ function HomeContent() {
           <Lantern size={26} color="var(--orange)" style={{ marginTop: 18 }} />
           <Lantern size={34} color="var(--magenta)" />
         </div>
-        <div className="container hero-grid">
-          <div style={{ minWidth: 0 }}>
-            {refCode && (
-              <p className="hero-rise hero-rise-1" style={{ fontSize: 13, color: "var(--gold)", marginBottom: 8 }}>
-                Referred by code {refCode.toUpperCase()} — it'll be applied at checkout.
-              </p>
-            )}
-            <p className="hero-rise hero-rise-1" style={{ fontSize: 14, letterSpacing: "0.02em", color: "var(--gold)", marginBottom: 14 }}>
-              {formatDateRange(event.startsAt, event.endsAt)}
-            </p>
-            <h1 className="hero-rise hero-rise-2 gradient-text" style={{ fontFamily: "var(--display)", fontWeight: 400, fontSize: "clamp(40px, 7vw, 72px)", maxWidth: 760, lineHeight: 1.08 }}>{event.title}</h1>
-            {event.tagline && (
-              <p className="hero-rise hero-rise-3" style={{ fontSize: 19, marginTop: 18, maxWidth: 560, color: "rgba(242,234,216,0.8)" }}>
-                {event.tagline}
-              </p>
-            )}
-            <p className="hero-rise hero-rise-3" style={{ marginTop: 10, fontSize: 15, color: "rgba(242,234,216,0.6)" }}>
-              {event.venue}{event.address ? ` — ${event.address}` : ""}
-            </p>
 
-            <div className="hero-rise hero-rise-4">
-              <Countdown target={event.countdownTarget || event.startsAt} label={event.countdownLabel || "Event starts in"} />
-            </div>
+        <img
+          src="/dancer-boy.webp"
+          alt=""
+          aria-hidden="true"
+          className="hero-rise hero-rise-3 hero-dancer hero-dancer-left hero-dancer-sway"
+        />
+        <img
+          src="/dancer-girl.webp"
+          alt=""
+          aria-hidden="true"
+          className="hero-rise hero-rise-3 hero-dancer hero-dancer-right hero-dancer-sway"
+        />
 
-            <div className="hero-rise hero-rise-4" style={{ marginTop: 30 }}>
-              <a href="#tickets" className="btn btn-festive">Get tickets</a>
-            </div>
+        <div className="container" style={{ position: "relative", zIndex: 1 }}>
+          {refCode && (
+            <p className="hero-rise hero-rise-1" style={{ fontSize: 13, color: "var(--gold)", marginBottom: 8 }}>
+              Referred by code {refCode.toUpperCase()} — it'll be applied at checkout.
+            </p>
+          )}
+          <p className="hero-rise hero-rise-1" style={{ fontSize: 14, letterSpacing: "0.02em", color: "var(--gold)", marginBottom: 14 }}>
+            {formatDateRange(event.startsAt, event.endsAt)}
+          </p>
+          <h1 className="hero-rise hero-rise-2 gradient-text" style={{ fontFamily: "var(--display)", fontWeight: 400, fontSize: "clamp(40px, 7vw, 72px)", maxWidth: 760, lineHeight: 1.08, margin: "0 auto", textAlign: "center" }}>{event.title}</h1>
+          {event.tagline && (
+            <p className="hero-rise hero-rise-3" style={{ fontSize: 19, marginTop: 18, maxWidth: 560, color: "rgba(242,234,216,0.8)", margin: "18px auto 0", textAlign: "center" }}>
+              {event.tagline}
+            </p>
+          )}
+          <p className="hero-rise hero-rise-3" style={{ marginTop: 10, fontSize: 15, color: "rgba(242,234,216,0.6)", textAlign: "center" }}>
+            {event.venue}{event.address ? ` — ${event.address}` : ""}
+          </p>
+
+          <div className="hero-rise hero-rise-4" style={{ display: "flex", justifyContent: "center" }}>
+            <Countdown target={event.countdownTarget || event.startsAt} label={event.countdownLabel || "Event starts in"} />
           </div>
 
-          <div className="hero-rise hero-rise-3 hero-illustration" aria-hidden="true">
-            <img src="/dandiya-dancers.webp" alt="" style={{ width: "100%", maxWidth: 380, display: "block", margin: "0 auto" }} />
+          <div className="hero-rise hero-rise-4" style={{ marginTop: 30, textAlign: "center" }}>
+            <a href="#tickets" className="btn btn-festive">Get tickets</a>
           </div>
         </div>
       </section>
