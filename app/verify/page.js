@@ -1,6 +1,8 @@
 "use client";
 
 import { useCallback, useEffect, useRef, useState } from "react";
+import { useSession } from "next-auth/react";
+import { useRouter } from "next/navigation";
 
 // Short beep/buzz feedback so staff can tell valid/invalid apart without
 // staring at the screen in a loud, dark venue entrance.
@@ -24,6 +26,8 @@ function playTone(kind) {
 }
 
 export default function VerifyPage() {
+  const { data: session, status } = useSession();
+  const router = useRouter();
   const scannerRef = useRef(null);
   const [result, setResult] = useState(null);
   const [manualCode, setManualCode] = useState("");
@@ -32,6 +36,10 @@ export default function VerifyPage() {
   const [torchSupported, setTorchSupported] = useState(false);
   const [sessionCount, setSessionCount] = useState({ valid: 0, invalid: 0 });
   const busyRef = useRef(false);
+
+  useEffect(() => {
+    if (status === "unauthenticated") router.push("/admin/login?callbackUrl=/verify");
+  }, [status, router]);
 
   const checkCode = useCallback(async (code) => {
     if (busyRef.current) return;
@@ -56,6 +64,7 @@ export default function VerifyPage() {
   }, []);
 
   useEffect(() => {
+    if (status !== "authenticated") return;
     let html5QrCode;
     let active = true;
 
@@ -97,7 +106,7 @@ export default function VerifyPage() {
         html5QrCode.stop().catch(() => {});
       }
     };
-  }, [checkCode]);
+  }, [checkCode, status]);
 
   function toggleTorch() {
     const next = !torchOn;
@@ -116,6 +125,13 @@ export default function VerifyPage() {
   }
 
   const flashColor = !result || result.loading ? null : result.valid ? "#1f6b3a" : "#7a2222";
+
+  if (status === "loading") {
+    return <div className="container" style={{ paddingTop: 80 }}>Checking your session…</div>;
+  }
+  if (status === "unauthenticated") {
+    return <div className="container" style={{ paddingTop: 80 }}>Redirecting to login…</div>;
+  }
 
   return (
     <div

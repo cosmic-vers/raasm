@@ -36,6 +36,7 @@ function BookingForm() {
   const [error, setError] = useState("");
   const [submitting, setSubmitting] = useState(false);
   const [tickets, setTickets] = useState(null);
+  const [auth, setAuth] = useState({ loading: true, user: null });
 
   useEffect(() => {
     fetch("/api/events")
@@ -51,6 +52,7 @@ function BookingForm() {
     fetch("/api/auth/session")
       .then((r) => r.json())
       .then((d) => {
+        setAuth({ loading: false, user: d.user || null });
         if (d.user) {
           setForm((f) => ({
             ...f,
@@ -59,7 +61,7 @@ function BookingForm() {
           }));
         }
       })
-      .catch(() => {});
+      .catch(() => setAuth({ loading: false, user: null }));
   }, []);
 
   function updateField(key, value) {
@@ -89,7 +91,7 @@ function BookingForm() {
         description: `${ticketType.name} × ${quantity}`,
         order_id: data.razorpayOrderId,
         prefill: { name: form.buyerName, email: form.buyerEmail, contact: form.buyerPhone },
-        theme: { color: "#e0a83b" },
+        theme: { color: "#f0b23c" },
         handler: async function (response) {
           const verifyRes = await fetch("/api/razorpay/verify", {
             method: "POST",
@@ -120,6 +122,29 @@ function BookingForm() {
     return (
       <div className="container" style={{ paddingTop: 80 }}>
         <p>No ticket selected. <Link href="/">Go back and pick one</Link>.</p>
+      </div>
+    );
+  }
+
+  if (auth.loading) {
+    return <div className="container" style={{ paddingTop: 80 }}>Loading…</div>;
+  }
+
+  if (!auth.user) {
+    return (
+      <div className="container" style={{ paddingTop: 64, maxWidth: 420, textAlign: "center" }}>
+        <img src="/logo.png" alt="" width={52} height={52} style={{ borderRadius: "50%" }} />
+        <h1 style={{ fontSize: 26, marginTop: 20 }}>Log in to book</h1>
+        <p style={{ marginTop: 10, color: "rgba(242,234,216,0.7)" }}>
+          So your ticket is tied to your account and shows up under "My tickets" later, you'll need to log in first — it only takes a moment.
+        </p>
+        <Link
+          href={`/login?next=/book?ticketTypeId=${ticketTypeId}${refCode ? `%26ref=${refCode}` : ""}`}
+          className="btn btn-primary"
+          style={{ marginTop: 20 }}
+        >
+          Log in to continue
+        </Link>
       </div>
     );
   }
@@ -162,7 +187,7 @@ function BookingForm() {
 
       <form onSubmit={handleSubmit} style={{ marginTop: 28 }}>
         <p style={{ fontSize: 13, color: "rgba(242,234,216,0.55)", marginBottom: 18 }}>
-          <Link href={`/login?next=/book?ticketTypeId=${ticketTypeId}`} style={{ color: "var(--gold)" }}>Log in</Link> first so this ticket shows up under "My tickets" — or just fill this in as a guest.
+          Booking as {auth.user.email || auth.user.name}.
         </p>
         <div className="field">
           <label>Quantity</label>

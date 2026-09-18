@@ -12,6 +12,7 @@ const NAV = [
   { key: "referrals", href: "/admin/referrals", label: "Referrals" },
   { key: "attendees", href: "/admin/attendees", label: "Attendees" },
   { key: "stats", href: "/admin/stats", label: "Stats" },
+  { key: "verify", href: "/verify", label: "Check-in scanner" },
 ];
 
 export default function AdminShell({ active, children }) {

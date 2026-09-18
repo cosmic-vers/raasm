@@ -1,4 +1,6 @@
 import { NextResponse } from "next/server";
+import { getServerSession } from "next-auth";
+import { authOptions } from "../../../../lib/authOptions";
 import { prisma } from "../../../../lib/prisma";
 import { verifyTicketCodeSignature, normalizeTicketCode } from "../../../../lib/tickets";
 import { checkRateLimit } from "../../../../lib/rateLimit";
@@ -7,11 +9,16 @@ import { checkRateLimit } from "../../../../lib/rateLimit";
 // scan; a second scan of the same code is reported as already checked in
 // so staff can catch duplicate/shared tickets.
 //
-// Note: this endpoint doesn't require admin login by design, so door staff
-// can use it without a shared password. That means anyone with the /verify
-// link could technically check tickets in - keep that link within your
-// staff group, don't post it publicly.
+// Requires an authenticated admin session - without this, anyone who found
+// the /verify URL could check tickets in (or mark them used) without ever
+// logging in. Door staff should log in with the admin account (or a staff
+// account, if you add separate ones) before scanning.
 export async function POST(req) {
+  const session = await getServerSession(authOptions);
+  if (!session) {
+    return NextResponse.json({ error: "Log in as an admin to scan tickets." }, { status: 401 });
+  }
+
   const ip = req.headers.get("x-forwarded-for")?.split(",")[0]?.trim() || "unknown";
   const rl = checkRateLimit(`verify:${ip}`, 120, 60_000); // generous - real scanning can be fast
   if (!rl.allowed) {

@@ -179,7 +179,7 @@ function HomeContent() {
           <Link href="/menu">Food & Drinks</Link> · <Link href="/stalls">Stalls</Link> · <Link href="/location">Getting there</Link>
         </p>
         <p style={{ fontSize: 12, marginTop: 10, color: "rgba(242,234,216,0.4)" }}>
-          <Link href="/admin/login">Admin</Link> · <Link href="/verify">Ticket check-in</Link>
+          <Link href="/admin/login">Admin</Link>
         </p>
       </footer>
     </main>

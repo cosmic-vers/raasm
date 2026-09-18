@@ -19,6 +19,11 @@ export async function POST(req) {
   let reservedQuantity = 0;
 
   try {
+    const buyerSession = getBuyerSession(cookies());
+    if (!buyerSession) {
+      return NextResponse.json({ error: "You need to be logged in to book a ticket." }, { status: 401 });
+    }
+
     const body = await req.json();
     const { ticketTypeId, quantity, buyerName, buyerEmail, buyerPhone, referralCode } = body;
 
@@ -55,8 +60,6 @@ export async function POST(req) {
     const discount = referral ? Math.round((subtotal * referral.discountPct) / 100) : 0;
     const amount = subtotal - discount;
 
-    const buyerSession = getBuyerSession(cookies());
-
     const order = await prisma.order.create({
       data: {
         buyerName,
@@ -65,7 +68,7 @@ export async function POST(req) {
         amount,
         status: "pending",
         referralId: referral?.id,
-        userId: buyerSession?.userId,
+        userId: buyerSession.userId,
         items: {
           create: [{ ticketTypeId, quantity, unitPrice: ticketType.price }],
         },
