@@ -25,7 +25,7 @@ export function FestiveFooter() {
         <Diya size={26} style={{ transform: "scaleX(-1)" }} />
       </div>
       <p style={{ fontSize: 13, color: "rgba(242,234,216,0.6)" }}>
-        <Link href="/menu">Food & Drinks</Link> · <Link href="/stalls">Stalls</Link> · <Link href="/location">Getting there</Link>
+        <Link href="/menu">Food & Drinks</Link> · <Link href="/stalls">Stalls</Link> · <Link href="/location">Getting there</Link> · <Link href="/about">About</Link> · <Link href="/help">Help</Link>
       </p>
       <p style={{ fontSize: 12, marginTop: 10, color: "rgba(242,234,216,0.4)" }}>
         <Link href="/">Back to event</Link>

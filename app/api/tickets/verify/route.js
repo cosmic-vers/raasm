@@ -53,16 +53,34 @@ export async function POST(req) {
       });
     }
 
-    const updated = await prisma.ticket.update({
-      where: { code },
-      data: { checkedIn: true, checkedInAt: new Date() },
+    // Conditional update (only where still not checked in) rather than a
+    // plain update - this is what makes it safe if the same code is
+    // scanned twice in the same instant on two different devices at the
+    // door. Only one of them can win the flip; the loser sees 0 rows
+    // affected and is told it's already checked in instead of both
+    // succeeding.
+    const now = new Date();
+    const result = await prisma.ticket.updateMany({
+      where: { code, checkedIn: false },
+      data: { checkedIn: true, checkedInAt: now },
     });
+
+    if (result.count === 0) {
+      const latest = await prisma.ticket.findUnique({ where: { code } });
+      return NextResponse.json({
+        valid: false,
+        reason: "Already checked in.",
+        checkedInAt: latest?.checkedInAt,
+        ticketType: ticket.ticketType.name,
+        buyerName: ticket.order.buyerName,
+      });
+    }
 
     return NextResponse.json({
       valid: true,
       ticketType: ticket.ticketType.name,
       buyerName: ticket.order.buyerName,
-      checkedInAt: updated.checkedInAt,
+      checkedInAt: now,
     });
   } catch (err) {
     console.error(err);

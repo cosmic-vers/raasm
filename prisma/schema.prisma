@@ -110,6 +110,15 @@ model TicketType {
   orderItems  OrderItem[]
 }
 
+// --- Editable static pages (About Us, Help/FAQ, etc.), edited from admin ---
+model PageContent {
+  id        String   @id @default(cuid())
+  slug      String   @unique // "about" | "help"
+  title     String
+  body      String   // plain text, paragraphs separated by blank lines
+  updatedAt DateTime @updatedAt
+}
+
 // --- Referral / discount codes ---
 model Referral {
   id           String   @id @default(cuid())

@@ -55,6 +55,8 @@ function HomeContent() {
               <Link href="/menu" style={{ color: "rgba(242,234,216,0.75)" }}>Food & Drinks</Link>
               <Link href="/stalls" style={{ color: "rgba(242,234,216,0.75)" }}>Stalls</Link>
               <Link href="/location" style={{ color: "rgba(242,234,216,0.75)" }}>Getting there</Link>
+              <Link href="/about" style={{ color: "rgba(242,234,216,0.75)" }}>About</Link>
+              <Link href="/help" style={{ color: "rgba(242,234,216,0.75)" }}>Help</Link>
             </div>
           </div>
           <NavAuth />
@@ -199,7 +201,7 @@ function HomeContent() {
           <Diya size={28} style={{ transform: "scaleX(-1)" }} />
         </div>
         <p style={{ fontSize: 13, color: "rgba(242,234,216,0.6)" }}>
-          <Link href="/menu">Food & Drinks</Link> · <Link href="/stalls">Stalls</Link> · <Link href="/location">Getting there</Link>
+          <Link href="/menu">Food & Drinks</Link> · <Link href="/stalls">Stalls</Link> · <Link href="/location">Getting there</Link> · <Link href="/about">About</Link> · <Link href="/help">Help</Link>
         </p>
         <p style={{ fontSize: 12, marginTop: 10, color: "rgba(242,234,216,0.4)" }}>
           <Link href="/admin/login">Admin</Link>
