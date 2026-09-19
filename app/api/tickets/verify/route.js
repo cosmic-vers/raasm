@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
 import { authOptions } from "../../../../lib/authOptions";
 import { prisma } from "../../../../lib/prisma";
-import { verifyTicketCodeSignature, normalizeTicketCode } from "../../../../lib/tickets";
+import { verifyTicketCodeSignature, normalizeTicketCode, venueDateKey } from "../../../../lib/tickets";
 import { checkRateLimit } from "../../../../lib/rateLimit";
 
 // Called from the door-staff scanner page. Marks a ticket as used on first
@@ -53,6 +53,26 @@ export async function POST(req) {
       });
     }
 
+    // Multi-day event: a ticket is only valid on the specific day it was
+    // sold for. Reject (without consuming it) if scanned on any other day.
+    const ticketDay = venueDateKey(ticket.ticketType.eventDate);
+    const today = venueDateKey(new Date());
+    if (ticketDay !== today) {
+      const dayLabel = new Date(ticket.ticketType.eventDate).toLocaleDateString("en-IN", {
+        timeZone: "Asia/Kolkata",
+        weekday: "long",
+        day: "numeric",
+        month: "long",
+      });
+      return NextResponse.json({
+        valid: false,
+        reason: `Wrong day — this ticket is for ${dayLabel}.`,
+        ticketType: ticket.ticketType.name,
+        buyerName: ticket.order.buyerName,
+        groupSize: ticket.ticketType.groupSize,
+      });
+    }
+
     // Conditional update (only where still not checked in) rather than a
     // plain update - this is what makes it safe if the same code is
     // scanned twice in the same instant on two different devices at the
@@ -73,6 +93,7 @@ export async function POST(req) {
         checkedInAt: latest?.checkedInAt,
         ticketType: ticket.ticketType.name,
         buyerName: ticket.order.buyerName,
+        groupSize: ticket.ticketType.groupSize,
       });
     }
 
@@ -80,6 +101,7 @@ export async function POST(req) {
       valid: true,
       ticketType: ticket.ticketType.name,
       buyerName: ticket.order.buyerName,
+      groupSize: ticket.ticketType.groupSize,
       checkedInAt: now,
     });
   } catch (err) {

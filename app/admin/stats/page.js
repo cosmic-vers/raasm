@@ -58,7 +58,12 @@ export default function AdminStatsPage() {
       <h2 style={{ fontSize: 20, marginTop: 40 }}>By ticket type</h2>
       <div style={{ maxWidth: 520, marginTop: 14 }}>
         {stats.byTicketType.map((tt) => (
-          <Bar key={tt.name} label={`${tt.name} — ${tt.checkedIn} checked in`} value={tt.sold} max={maxTicketType} />
+          <Bar
+            key={`${tt.name}-${tt.eventDate}`}
+            label={`${tt.name} (${new Date(tt.eventDate).toLocaleDateString("en-IN", { day: "numeric", month: "short" })}) — ${tt.checkedIn} checked in`}
+            value={tt.sold}
+            max={maxTicketType}
+          />
         ))}
       </div>
 

@@ -20,7 +20,10 @@ export const dynamic = "force-dynamic";
 const getCachedEvent = unstable_cache(
   async () => {
     return prisma.event.findFirst({
-      include: { ticketTypes: true, galleryImages: { orderBy: { createdAt: "desc" } } },
+      include: {
+        ticketTypes: { orderBy: [{ eventDate: "asc" }, { price: "asc" }] },
+        galleryImages: { orderBy: { createdAt: "desc" } },
+      },
       orderBy: { createdAt: "asc" },
     });
   },

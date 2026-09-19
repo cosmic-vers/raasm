@@ -18,6 +18,12 @@ async function main() {
 
   const existingEvent = await prisma.event.findFirst();
   if (!existingEvent) {
+    // Three consecutive nights, each 7pm-11pm.
+    const day1Start = new Date(Date.now() + 30 * 24 * 60 * 60 * 1000);
+    day1Start.setHours(19, 0, 0, 0);
+    const dayStart = (offset) => new Date(day1Start.getTime() + offset * 24 * 60 * 60 * 1000);
+    const dayEnd = (offset) => new Date(dayStart(offset).getTime() + 4 * 60 * 60 * 1000);
+
     const event = await prisma.event.create({
       data: {
         title: "Your Event Name",
@@ -25,17 +31,34 @@ async function main() {
         description: "Full description of the event goes here. Edit this from the admin dashboard.",
         venue: "Venue Name",
         address: "Full address here",
-        startsAt: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000),
-        endsAt: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000 + 4 * 60 * 60 * 1000),
+        startsAt: dayStart(0),
+        endsAt: dayEnd(2), // spans all 3 nights
       },
     });
-    await prisma.ticketType.createMany({
-      data: [
-        { eventId: event.id, name: "General", price: 50000, quantity: 200 },
-        { eventId: event.id, name: "VIP", price: 150000, quantity: 50 },
-      ],
-    });
-    console.log("Created sample event with General (₹500) and VIP (₹1500) tickets.");
+
+    // Solo / Couple / Trio / Squad passes, each sold separately per day.
+    const groupTiers = [
+      { name: "Solo", groupSize: 1, price: 50000, quantity: 150 },
+      { name: "Couple", groupSize: 2, price: 90000, quantity: 80 },
+      { name: "Trio", groupSize: 3, price: 130000, quantity: 40 },
+      { name: "Squad", groupSize: 4, price: 160000, quantity: 30 },
+    ];
+
+    const ticketTypes = [];
+    for (let day = 0; day < 3; day++) {
+      for (const tier of groupTiers) {
+        ticketTypes.push({
+          eventId: event.id,
+          name: tier.name,
+          eventDate: dayStart(day),
+          groupSize: tier.groupSize,
+          price: tier.price,
+          quantity: tier.quantity,
+        });
+      }
+    }
+    await prisma.ticketType.createMany({ data: ticketTypes });
+    console.log("Created a sample 3-day event with Solo/Couple/Trio/Squad tickets for each day.");
   }
 }
 

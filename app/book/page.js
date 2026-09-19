@@ -49,7 +49,7 @@ function BookingForm() {
   }, [ticketTypeId]);
 
   useEffect(() => {
-    fetch("/api/auth/session")
+    fetch("/api/buyer-session")
       .then((r) => r.json())
       .then((d) => {
         setAuth({ loading: false, user: d.user || null });
@@ -88,7 +88,7 @@ function BookingForm() {
         amount: data.amount,
         currency: data.currency,
         name: event.title,
-        description: `${ticketType.name} × ${quantity}`,
+        description: `${ticketType.name} × ${quantity} — ${new Intl.DateTimeFormat("en-IN", { day: "numeric", month: "short" }).format(new Date(ticketType.eventDate))}`,
         order_id: data.razorpayOrderId,
         prefill: { name: form.buyerName, email: form.buyerEmail, contact: form.buyerPhone },
         theme: { color: "#f0b23c" },
@@ -157,7 +157,9 @@ function BookingForm() {
         </div>
         <h1 style={{ fontSize: 28, textAlign: "center" }}>You're in 🎟️</h1>
         <p style={{ marginTop: 10, color: "rgba(242,234,216,0.8)", textAlign: "center" }}>
-          {tickets.length} ticket{tickets.length > 1 ? "s" : ""} booked. A confirmation has been recorded — bring the QR code(s) below to the door.
+          {tickets.length} ticket{tickets.length > 1 ? "s" : ""} booked
+          {ticketType ? ` for ${new Intl.DateTimeFormat("en-IN", { weekday: "long", day: "numeric", month: "long" }).format(new Date(ticketType.eventDate))}` : ""}.
+          A confirmation has been recorded — bring the QR code(s) below to the door. Each admits {ticketType?.groupSize || 1} {ticketType?.groupSize === 1 ? "person" : "people"}.
         </p>
         <div style={{ display: "grid", gap: 14, marginTop: 24 }}>
           {tickets.map((t) => (
@@ -180,9 +182,15 @@ function BookingForm() {
       <Link href="/" style={{ fontSize: 14, color: "rgba(242,234,216,0.6)" }}>← Back</Link>
       <h1 style={{ fontSize: 28, marginTop: 14 }}>Book your ticket</h1>
       {ticketType && (
-        <p style={{ marginTop: 8, color: "rgba(242,234,216,0.7)" }}>
-          {ticketType.name} — ₹{(ticketType.price / 100).toLocaleString("en-IN")} each
-        </p>
+        <>
+          <p style={{ marginTop: 8, color: "rgba(242,234,216,0.7)" }}>
+            {ticketType.name} — ₹{(ticketType.price / 100).toLocaleString("en-IN")} each
+          </p>
+          <p style={{ marginTop: 4, fontSize: 13, color: "var(--gold)" }}>
+            {new Intl.DateTimeFormat("en-IN", { weekday: "long", day: "numeric", month: "long" }).format(new Date(ticketType.eventDate))}
+            {" · "}Admits {ticketType.groupSize} {ticketType.groupSize === 1 ? "person" : "people"} per ticket
+          </p>
+        </>
       )}
 
       <form onSubmit={handleSubmit} style={{ marginTop: 28 }}>
@@ -199,6 +207,11 @@ function BookingForm() {
             onChange={(e) => setQuantity(Number(e.target.value))}
             required
           />
+          {ticketType && (
+            <p style={{ fontSize: 12, marginTop: 4, color: "rgba(242,234,216,0.5)" }}>
+              Total: {quantity * ticketType.groupSize} people · ₹{((ticketType.price * quantity) / 100).toLocaleString("en-IN")}
+            </p>
+          )}
         </div>
         <div className="field">
           <label>Full name</label>

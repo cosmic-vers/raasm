@@ -21,6 +21,7 @@ export async function GET() {
     const sold = paidTickets.filter((t) => t.ticketTypeId === tt.id);
     return {
       name: tt.name,
+      eventDate: tt.eventDate,
       sold: sold.length,
       checkedIn: sold.filter((t) => t.checkedIn).length,
       capacity: tt.quantity,

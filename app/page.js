@@ -19,11 +19,30 @@ function formatPrice(paise) {
   return `₹${(paise / 100).toLocaleString("en-IN")}`;
 }
 
+function formatDayLabel(dateStr) {
+  return new Intl.DateTimeFormat("en-IN", { weekday: "long", day: "numeric", month: "long" }).format(new Date(dateStr));
+}
+
+// Groups the flat ticketTypes list into one bucket per calendar day, in
+// date order, so the storefront can show "Day 1 / Day 2 / Day 3" tabs.
+function groupByDay(ticketTypes) {
+  const byDate = new Map();
+  for (const tt of ticketTypes) {
+    const key = new Date(tt.eventDate).toDateString();
+    if (!byDate.has(key)) byDate.set(key, { date: tt.eventDate, tickets: [] });
+    byDate.get(key).tickets.push(tt);
+  }
+  return [...byDate.values()]
+    .sort((a, b) => new Date(a.date) - new Date(b.date))
+    .map((group, i) => ({ ...group, dayNumber: i + 1 }));
+}
+
 function HomeContent() {
   const searchParams = useSearchParams();
   const refCode = searchParams.get("ref");
   const [event, setEvent] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [selectedDay, setSelectedDay] = useState(0);
 
   useEffect(() => {
     fetch("/api/events")
@@ -139,36 +158,70 @@ function HomeContent() {
             <DandiyaSticks size={34} />
             <h2 style={{ fontSize: 26 }}>Tickets</h2>
           </div>
-          <div style={{ display: "grid", gap: 16, maxWidth: 640 }}>
-            {event.ticketTypes.map((tt) => {
-              const soldOut = tt.sold >= tt.quantity;
-              return (
-                <div className="ticket-stub" key={tt.id}>
-                  <div className="stub-main">
-                    <h3 style={{ fontSize: 20 }}>{tt.name}</h3>
-                    {tt.description && (
-                      <p style={{ fontSize: 14, marginTop: 6, color: "rgba(28,26,21,0.7)" }}>{tt.description}</p>
-                    )}
-                    <p style={{ fontSize: 13, marginTop: 8, color: "rgba(28,26,21,0.55)" }}>
-                      {soldOut ? "Sold out" : `${tt.quantity - tt.sold} left`}
-                    </p>
+
+          {(() => {
+            const days = groupByDay(event.ticketTypes);
+            if (days.length === 0) {
+              return <p style={{ color: "rgba(242,234,216,0.6)" }}>Tickets aren't on sale yet — check back soon.</p>;
+            }
+            const active = days[Math.min(selectedDay, days.length - 1)];
+
+            return (
+              <>
+                {days.length > 1 && (
+                  <div style={{ display: "flex", gap: 10, marginBottom: 20, flexWrap: "wrap" }}>
+                    {days.map((d, i) => (
+                      <button
+                        key={d.date}
+                        type="button"
+                        onClick={() => setSelectedDay(i)}
+                        className={i === Math.min(selectedDay, days.length - 1) ? "btn btn-primary" : "btn btn-outline"}
+                        style={{ fontSize: 13, padding: "8px 16px" }}
+                      >
+                        Day {d.dayNumber}
+                      </button>
+                    ))}
                   </div>
-                  <div className="stub-end">
-                    <span style={{ fontFamily: "var(--serif)", fontSize: 20, fontWeight: 700 }}>
-                      {formatPrice(tt.price)}
-                    </span>
-                    <Link
-                      href={soldOut ? "#" : `/book?ticketTypeId=${tt.id}${refCode ? `&ref=${refCode}` : ""}`}
-                      className="btn btn-primary"
-                      style={{ marginTop: 12, fontSize: 13, padding: "8px 14px", pointerEvents: soldOut ? "none" : "auto", opacity: soldOut ? 0.5 : 1 }}
-                    >
-                      Book
-                    </Link>
-                  </div>
+                )}
+                <p style={{ fontSize: 14, color: "var(--gold)", marginBottom: 16 }}>{formatDayLabel(active.date)}</p>
+
+                <div style={{ display: "grid", gap: 16, maxWidth: 640 }}>
+                  {active.tickets.map((tt) => {
+                    const soldOut = tt.sold >= tt.quantity;
+                    return (
+                      <div className="ticket-stub" key={tt.id}>
+                        <div className="stub-main">
+                          <h3 style={{ fontSize: 20 }}>{tt.name}</h3>
+                          <p style={{ fontSize: 13, marginTop: 4, color: "rgba(28,26,21,0.6)" }}>
+                            Admits {tt.groupSize} {tt.groupSize === 1 ? "person" : "people"}
+                          </p>
+                          {tt.description && (
+                            <p style={{ fontSize: 14, marginTop: 6, color: "rgba(28,26,21,0.7)" }}>{tt.description}</p>
+                          )}
+                          <p style={{ fontSize: 13, marginTop: 8, color: "rgba(28,26,21,0.55)" }}>
+                            {soldOut ? "Sold out" : `${tt.quantity - tt.sold} left`}
+                          </p>
+                        </div>
+                        <div className="stub-end">
+                          <span style={{ fontFamily: "var(--serif)", fontSize: 20, fontWeight: 700 }}>
+                            {formatPrice(tt.price)}
+                          </span>
+                          <Link
+                            href={soldOut ? "#" : `/book?ticketTypeId=${tt.id}${refCode ? `&ref=${refCode}` : ""}`}
+                            className="btn btn-primary"
+                            style={{ marginTop: 12, fontSize: 13, padding: "8px 14px", pointerEvents: soldOut ? "none" : "auto", opacity: soldOut ? 0.5 : 1 }}
+                          >
+                            Book
+                          </Link>
+                        </div>
+                      </div>
+                    );
+                  })}
                 </div>
-              );
-            })}
-          </div>
+              </>
+            );
+          })()}
+
           <p style={{ marginTop: 18, fontSize: 13, color: "rgba(242,234,216,0.5)" }}>
             Have a referral code from a friend? Enter it on the booking page for a discount.
           </p>

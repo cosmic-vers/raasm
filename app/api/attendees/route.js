@@ -19,6 +19,8 @@ export async function GET() {
     id: t.id,
     code: t.code,
     ticketType: t.ticketType.name,
+    eventDate: t.ticketType.eventDate,
+    groupSize: t.ticketType.groupSize,
     buyerName: t.order.buyerName,
     buyerEmail: t.order.buyerEmail,
     buyerPhone: t.order.buyerPhone,

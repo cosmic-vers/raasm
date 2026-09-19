@@ -11,7 +11,7 @@ export default function AdminEventsPage() {
   const [event, setEvent] = useState(null);
   const [saving, setSaving] = useState(false);
   const [message, setMessage] = useState("");
-  const [newTicket, setNewTicket] = useState({ name: "", price: "", quantity: "" });
+  const [newTicket, setNewTicket] = useState({ name: "", eventDate: "", groupSize: 1, price: "", quantity: "" });
 
   useEffect(() => {
     if (status === "unauthenticated") router.push("/admin/login");
@@ -26,6 +26,39 @@ export default function AdminEventsPage() {
     const pad = (n) => String(n).padStart(2, "0");
     return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`;
   }
+
+  function toDateInput(dateStr) {
+    const d = new Date(dateStr);
+    const pad = (n) => String(n).padStart(2, "0");
+    return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`;
+  }
+
+  // Each calendar day the event spans - e.g. a 3-night event gets 3 entries -
+  // so ticket types can be tied to "Day 1", "Day 2", "Day 3" etc.
+  function eventDays(ev) {
+    const start = new Date(ev.startsAt);
+    const end = new Date(ev.endsAt);
+    const days = [];
+    const cursor = new Date(start.getFullYear(), start.getMonth(), start.getDate());
+    const last = new Date(end.getFullYear(), end.getMonth(), end.getDate());
+    let n = 1;
+    while (cursor <= last) {
+      days.push({
+        value: toDateInput(cursor),
+        label: `Day ${n} — ${cursor.toLocaleDateString("en-IN", { weekday: "short", day: "numeric", month: "short" })}`,
+      });
+      cursor.setDate(cursor.getDate() + 1);
+      n++;
+    }
+    return days;
+  }
+
+  const GROUP_PRESETS = [
+    { name: "Solo", groupSize: 1 },
+    { name: "Couple", groupSize: 2 },
+    { name: "Trio", groupSize: 3 },
+    { name: "Squad", groupSize: 4 },
+  ];
 
   async function saveEvent(e) {
     e.preventDefault();
@@ -48,6 +81,8 @@ export default function AdminEventsPage() {
       body: JSON.stringify({
         eventId: event.id,
         name: newTicket.name,
+        eventDate: newTicket.eventDate,
+        groupSize: Number(newTicket.groupSize) || 1,
         price: Math.round(Number(newTicket.price) * 100),
         quantity: Number(newTicket.quantity),
       }),
@@ -55,7 +90,7 @@ export default function AdminEventsPage() {
     if (res.ok) {
       const data = await res.json();
       setEvent((ev) => ({ ...ev, ticketTypes: [...ev.ticketTypes, data.ticketType] }));
-      setNewTicket({ name: "", price: "", quantity: "" });
+      setNewTicket({ name: "", eventDate: newTicket.eventDate, groupSize: 1, price: "", quantity: "" });
     }
   }
 
@@ -158,32 +193,76 @@ export default function AdminEventsPage() {
       </form>
 
       <h2 style={{ fontSize: 22, marginTop: 44 }}>Ticket types</h2>
-      <table style={{ marginTop: 14, maxWidth: 640 }}>
+      <p style={{ fontSize: 13, color: "rgba(242,234,216,0.5)", marginTop: 2 }}>
+        Each ticket type is tied to one day of the event and admits a fixed group size — e.g. "Couple, Day 2" admits 2 people.
+      </p>
+      <table style={{ marginTop: 14, maxWidth: 720 }}>
         <thead>
-          <tr><th>Name</th><th>Price</th><th>Qty</th><th>Sold</th><th></th></tr>
+          <tr><th>Day</th><th>Name</th><th>Admits</th><th>Price</th><th>Qty</th><th>Sold</th><th></th></tr>
         </thead>
         <tbody>
-          {event.ticketTypes.map((tt) => (
-            <tr key={tt.id}>
-              <td>{tt.name}</td>
-              <td>₹{(tt.price / 100).toLocaleString("en-IN")}</td>
-              <td>{tt.quantity}</td>
-              <td>{tt.sold}</td>
-              <td>
-                <button className="btn btn-outline" style={{ fontSize: 12, padding: "6px 10px" }} onClick={() => deleteTicketType(tt.id)}>
-                  Delete
-                </button>
-              </td>
-            </tr>
-          ))}
+          {[...event.ticketTypes]
+            .sort((a, b) => new Date(a.eventDate) - new Date(b.eventDate) || a.price - b.price)
+            .map((tt) => (
+              <tr key={tt.id}>
+                <td>{new Date(tt.eventDate).toLocaleDateString("en-IN", { weekday: "short", day: "numeric", month: "short" })}</td>
+                <td>{tt.name}</td>
+                <td>{tt.groupSize} {tt.groupSize === 1 ? "person" : "people"}</td>
+                <td>₹{(tt.price / 100).toLocaleString("en-IN")}</td>
+                <td>{tt.quantity}</td>
+                <td>{tt.sold}</td>
+                <td>
+                  <button className="btn btn-outline" style={{ fontSize: 12, padding: "6px 10px" }} onClick={() => deleteTicketType(tt.id)}>
+                    Delete
+                  </button>
+                </td>
+              </tr>
+            ))}
         </tbody>
       </table>
 
-      <form onSubmit={addTicketType} style={{ display: "flex", gap: 10, marginTop: 20, flexWrap: "wrap", maxWidth: 640 }}>
-        <input placeholder="Name (e.g. VIP)" value={newTicket.name} onChange={(e) => setNewTicket({ ...newTicket, name: e.target.value })} style={{ flex: 1, minWidth: 140 }} required />
-        <input placeholder="Price (₹)" type="number" value={newTicket.price} onChange={(e) => setNewTicket({ ...newTicket, price: e.target.value })} style={{ width: 110 }} required />
-        <input placeholder="Quantity" type="number" value={newTicket.quantity} onChange={(e) => setNewTicket({ ...newTicket, quantity: e.target.value })} style={{ width: 100 }} required />
-        <button className="btn btn-primary">Add</button>
+      <form onSubmit={addTicketType} style={{ display: "flex", gap: 10, marginTop: 20, flexWrap: "wrap", maxWidth: 720, alignItems: "flex-end" }}>
+        <div className="field" style={{ minWidth: 170 }}>
+          <label>Day</label>
+          <select value={newTicket.eventDate} onChange={(e) => setNewTicket({ ...newTicket, eventDate: e.target.value })} required>
+            <option value="" disabled>Choose a day</option>
+            {eventDays(event).map((d) => (
+              <option key={d.value} value={d.value}>{d.label}</option>
+            ))}
+          </select>
+        </div>
+        <div className="field" style={{ minWidth: 140 }}>
+          <label>Name</label>
+          <input placeholder="e.g. Solo" value={newTicket.name} onChange={(e) => setNewTicket({ ...newTicket, name: e.target.value })} required />
+        </div>
+        <div className="field" style={{ width: 110 }}>
+          <label>Admits</label>
+          <input placeholder="1" type="number" min={1} value={newTicket.groupSize} onChange={(e) => setNewTicket({ ...newTicket, groupSize: e.target.value })} required />
+        </div>
+        <div className="field" style={{ width: 110 }}>
+          <label>Price (₹)</label>
+          <input placeholder="Price (₹)" type="number" value={newTicket.price} onChange={(e) => setNewTicket({ ...newTicket, price: e.target.value })} required />
+        </div>
+        <div className="field" style={{ width: 100 }}>
+          <label>Quantity</label>
+          <input placeholder="Quantity" type="number" value={newTicket.quantity} onChange={(e) => setNewTicket({ ...newTicket, quantity: e.target.value })} required />
+        </div>
+        <button className="btn btn-primary" style={{ height: 40 }}>Add</button>
+
+        <div style={{ display: "flex", gap: 8, alignItems: "center", width: "100%", marginTop: 4 }}>
+          <span style={{ fontSize: 12, color: "rgba(242,234,216,0.5)" }}>Quick fill:</span>
+          {GROUP_PRESETS.map((p) => (
+            <button
+              key={p.name}
+              type="button"
+              className="btn btn-outline"
+              style={{ fontSize: 12, padding: "5px 10px" }}
+              onClick={() => setNewTicket((nt) => ({ ...nt, name: p.name, groupSize: p.groupSize }))}
+            >
+              {p.name} ({p.groupSize})
+            </button>
+          ))}
+        </div>
       </form>
     </AdminShell>
   );

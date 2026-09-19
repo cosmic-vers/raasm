@@ -23,6 +23,8 @@ export async function GET() {
       createdAt: order.createdAt,
       amount: order.amount,
       ticketTypeName: order.items[0]?.ticketType?.name || "Ticket",
+      eventDate: order.items[0]?.ticketType?.eventDate || null,
+      groupSize: order.items[0]?.ticketType?.groupSize || 1,
       tickets: await Promise.all(
         order.tickets.map(async (t) => ({
           id: t.id,

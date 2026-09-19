@@ -12,7 +12,7 @@ import {
 
 async function establishSession(credential, fallbackName) {
   const idToken = await credential.user.getIdToken();
-  const res = await fetch("/api/auth/session", {
+  const res = await fetch("/api/buyer-session", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ idToken, name: fallbackName || undefined }),

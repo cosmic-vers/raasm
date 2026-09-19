@@ -47,16 +47,18 @@ export default function AdminAttendeesPage() {
         <table>
           <thead>
             <tr>
-              <th>Name</th><th>Email</th><th>Phone</th><th>Ticket</th><th>Status</th><th>Referral</th><th>Checked in</th>
+              <th>Day</th><th>Name</th><th>Email</th><th>Phone</th><th>Ticket</th><th>Admits</th><th>Status</th><th>Referral</th><th>Checked in</th>
             </tr>
           </thead>
           <tbody>
             {filtered.map((a) => (
               <tr key={a.id}>
+                <td>{new Date(a.eventDate).toLocaleDateString("en-IN", { day: "numeric", month: "short" })}</td>
                 <td>{a.buyerName}</td>
                 <td>{a.buyerEmail}</td>
                 <td>{a.buyerPhone}</td>
                 <td>{a.ticketType}</td>
+                <td>{a.groupSize}</td>
                 <td>{a.orderStatus}</td>
                 <td>{a.referralCode || "—"}</td>
                 <td>{a.checkedIn ? `✓ ${new Date(a.checkedInAt).toLocaleTimeString()}` : "—"}</td>

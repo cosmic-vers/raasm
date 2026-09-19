@@ -54,7 +54,10 @@ export default function MyTicketsPage() {
         {orders.map((order) => (
           <div key={order.id}>
             <p style={{ fontSize: 13, color: "rgba(242,234,216,0.55)", marginBottom: 10 }}>
-              {order.ticketTypeName} · Booked {formatDate(order.createdAt)}
+              {order.ticketTypeName}
+              {order.eventDate && ` · Valid ${formatDate(order.eventDate)}`}
+              {" · "}Admits {order.groupSize} {order.groupSize === 1 ? "person" : "people"}
+              {" · "}Booked {formatDate(order.createdAt)}
             </p>
             <div style={{ display: "grid", gap: 14 }}>
               {order.tickets.map((t) => (

@@ -94,20 +94,26 @@ model GalleryImage {
   createdAt DateTime @default(now())
 }
 
-// --- Ticket types, e.g. "General", "VIP" ---
+// --- Ticket types, e.g. "Solo", "Couple", "Trio", "Squad" - each one tied
+// to a specific calendar day of the (possibly multi-day) event, since a
+// ticket only admits its holder(s) on that one day. ---
 model TicketType {
   id          String   @id @default(cuid())
   eventId     String
   event       Event    @relation(fields: [eventId], references: [id], onDelete: Cascade)
   name        String
   description String?
-  price       Int      // in paise (INR smallest unit) to avoid float issues
+  eventDate   DateTime // which day of the event this ticket is valid for (date portion only matters)
+  groupSize   Int      @default(1) // people admitted per ticket unit: Solo=1, Couple=2, Trio=3, Squad=4...
+  price       Int      // in paise (INR smallest unit) to avoid float issues - price per unit, not per person
   quantity    Int      // total available
   sold        Int      @default(0) // confirmed, paid tickets
   reserved    Int      @default(0) // held by pending (unpaid) orders - released if the order expires/fails
 
   tickets     Ticket[]
   orderItems  OrderItem[]
+
+  @@index([eventDate])
 }
 
 // --- Editable static pages (About Us, Help/FAQ, etc.), edited from admin ---

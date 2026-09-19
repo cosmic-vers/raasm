@@ -9,14 +9,14 @@ export default function NavAuth() {
   const [user, setUser] = useState(undefined); // undefined = loading, null = logged out
 
   useEffect(() => {
-    fetch("/api/auth/session")
+    fetch("/api/buyer-session")
       .then((r) => r.json())
       .then((d) => setUser(d.user))
       .catch(() => setUser(null));
   }, []);
 
   async function handleLogout() {
-    await fetch("/api/auth/session", { method: "DELETE" });
+    await fetch("/api/buyer-session", { method: "DELETE" });
     setUser(null);
     window.location.href = "/";
   }

@@ -211,12 +211,20 @@ export default function VerifyPage() {
             ) : result.valid ? (
               <>
                 <p className="success-text" style={{ fontSize: 18, fontWeight: 700 }}>✓ Valid — checked in</p>
-                <p style={{ marginTop: 6 }}>{result.buyerName} · {result.ticketType}</p>
+                <p style={{ marginTop: 6 }}>
+                  {result.buyerName} · {result.ticketType}
+                  {result.groupSize > 1 && ` (admits ${result.groupSize} people — count heads!)`}
+                </p>
               </>
             ) : (
               <>
                 <p className="error-text" style={{ fontSize: 18, fontWeight: 700 }}>✗ {result.reason}</p>
-                {result.buyerName && <p style={{ marginTop: 6 }}>{result.buyerName} · {result.ticketType}</p>}
+                {result.buyerName && (
+                  <p style={{ marginTop: 6 }}>
+                    {result.buyerName} · {result.ticketType}
+                    {result.groupSize > 1 && ` (admits ${result.groupSize})`}
+                  </p>
+                )}
               </>
             )}
           </div>
